@@ -154,17 +154,15 @@ class _MainPageState extends State<MainPage>
               indent: 10,
               endIndent: 10,
             ),
-            ListTile(
-              title: Text(_localizations.about),
-              leading: const Icon(Icons.info),
-              onTap: () {
-                Navigator.pop(context);
-                showAboutDialog(
-                    context: context,
-                    applicationVersion: _localizations.appVersion,
-                    children: [Text(_localizations.aboutDescription)]);
-              },
-              style: ListTileStyle.drawer,
+            AboutListTile(
+              applicationIcon: Image.asset(
+                iconAssetPath,
+                height: 50,
+              ),
+              applicationName: _localizations.title,
+              applicationVersion: _localizations.appVersion,
+              icon: const Icon(Icons.info),
+              aboutBoxChildren: [Text(_localizations.aboutDescription)],
             )
           ]),
         ),
