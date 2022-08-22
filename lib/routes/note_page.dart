@@ -69,39 +69,32 @@ class _NotePageState extends State<NotePage> with RestorationMixin {
     // the result can be processed and returned. It also supports the Android's back button.
     return WillPopScope(
       onWillPop: () async {
-        final title = _titleController.value.text;
-        final details = _detailsController.value.text;
+        var title = _titleController.value.text;
+        var details = _detailsController.value.text;
 
+        if (title.trim().isEmpty && details.trim().isEmpty) {
+          Navigator.pop(context, null);
+          return true;
+        }
+        
         if (widget.noteValues == null) {
-          if (title.trim().isEmpty && details.trim().isEmpty) {
-            Navigator.pop(context, null);
-          } else if (title.trim().isEmpty) {
-            var firstDetailsLine = LineSplitter.split(details).first;
+          if (title.trim().isEmpty) {
+            final firstDetailsLine = LineSplitter.split(details).first;
             if (firstDetailsLine.length <= 36) {
-              _titleController.value.text = firstDetailsLine;
+              title = firstDetailsLine;
             } else {
-              _titleController.value.text = firstDetailsLine.substring(0, 36);
+              title = firstDetailsLine.substring(0, 36);
             }
-            final newNoteValues = <String, dynamic>{
-              'title': _titleController.value.text,
-              'details': _detailsController.value.text,
-            };
-            Navigator.pop(context, newNoteValues);
-          } else {
-            final newNoteValues = <String, dynamic>{
-              'title': _titleController.value.text,
-              'details': _detailsController.value.text,
-            };
-            Navigator.pop(context, newNoteValues);
           }
+          final newNoteValues = <String, dynamic>{
+            'title': title,
+            'details': details,
+          };
+          Navigator.pop(context, newNoteValues);
         } else {
-          if (title.trim().isEmpty && details.trim().isEmpty) {
-            Navigator.pop(context, null);
-          } else {
-            widget.noteValues?['title'] = title;
-            widget.noteValues?['details'] = details;
-            Navigator.pop(context, widget.noteValues);
-          }
+          widget.noteValues?['title'] = title;
+          widget.noteValues?['details'] = details;
+          Navigator.pop(context, widget.noteValues);
         }
         return true;
       },
