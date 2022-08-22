@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:noted/data/note.dart';
 import 'package:noted/providers/preferences.dart';
 import 'package:noted/routes/main_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -24,10 +23,11 @@ class App extends StatelessWidget {
           animation: value,
           builder: (context, _) {
             return MaterialApp(
+              restorationScopeId: 'Noted Material App',
               locale: value.locale,
               onGenerateTitle: (context) => AppLocalizations.of(context).title,
               // These two lines are needed for localizations. They set the supported
-              // languages for this app and make the AppLocalization.of callback available.
+              // languages for this app and make the AppLocalizations.of callback available.
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               theme: AppTheme.lightTheme,
@@ -35,9 +35,8 @@ class App extends StatelessWidget {
               themeMode: value.themeMode,
               onGenerateRoute: (settings) {
                 if (settings.name == NotePage.routeName) {
-                  var note = settings.arguments as Note?;
                   return customPageRoute(NotePage(
-                    note: note,
+                    noteValues: settings.arguments as Map<Object?, Object?>?,
                   ));
                 } else if (settings.name == SettingsPage.routeName) {
                   return customPageRoute(const SettingsPage());
@@ -54,9 +53,9 @@ class App extends StatelessWidget {
     );
   }
 
-  /// Makes a custom route with slide up animation.
+  /// Makes a route with a custom slide animation.
   ///
-  /// [route] : The route widget that needs to be animated
+  /// [route] : The route widget that gets animated
   PageRouteBuilder customPageRoute(Widget route) {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 250),

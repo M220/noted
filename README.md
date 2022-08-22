@@ -4,7 +4,8 @@ A simple notes and todo app, written with Flutter.
 
 TODO:
 - ~~Change the settings page's Dropdowns to Material Alert Dialogs~~
-- Add state restoration
+- ~~Add state restoration~~
+- Add state restoration tests
 - Add sharing functionality
 - Complete the widget tests
 - Add Undo/Redo
