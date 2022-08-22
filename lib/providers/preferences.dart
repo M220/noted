@@ -25,12 +25,14 @@ class Preferences extends ChangeNotifier {
   /// The user's preferred locale
   late Locale _locale;
 
-  /// The user's preferred theme mode. Don't change the variable directly.
-  /// Use the [setTheme] method instead.
+  /// The user's preferred theme mode.
+  ///
+  /// Use the [setTheme] method to set a new ThemeMode.
   ThemeMode get themeMode => _themeMode;
 
-  /// The user's preferred locale. Don't change the variable directly.
-  /// Use the [setLocale] method instead.
+  /// The user's preferred locale.
+  ///
+  /// Use the [setLocale] method to set a new Locale.
   Locale get locale => _locale;
 
   /// Loads the user's preferences and sets the necessary instance variables. Should
