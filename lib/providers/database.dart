@@ -35,12 +35,10 @@ class Database with ChangeNotifier {
   /// Loads the Isar database instance and assigns the necessary variables. Should
   /// be called and awaited before the instance can be used.
   Future<void> load() async {
-    if (Isar.getInstance() == null || !Isar.getInstance()!.isOpen) {
-      // Retreive the current saved notes and TODOs.
-      final dir = await getApplicationSupportDirectory();
-      _database =
-          await Isar.open([NoteSchema, TodoSchema], directory: dir.path);
-    }
+    if (Isar.getInstance() != null) return;
+    // Retreive the current saved notes and TODOs.
+    final dir = await getApplicationSupportDirectory();
+    _database = await Isar.open([NoteSchema, TodoSchema], directory: dir.path);
     _notes = await _database.notes.where().findAll();
     _todos = await _database.todos.where().findAll();
   }
