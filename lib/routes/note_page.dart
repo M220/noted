@@ -23,74 +23,54 @@ class _NotePageState extends State<NotePage> {
   /// The [Note] instance received from the widget
   Note? note;
 
-  /// The localization instance containing tranlations
-  late AppLocalizations _localizations;
-
-  /// The title of the note
-  late String _title;
-
-  /// The details of the note
-  late String _details;
-
   /// The textController for the title's TextField
-  late TextEditingController titleController;
+  late TextEditingController _titleController;
 
   /// The textController for the details' TextField
-  late TextEditingController detailsController;
+  late TextEditingController _detailsController;
 
   /// Initializes the needed instance variables
   ///
-  /// if [Note] is given to the widget and is thus, not null, [_title] and [_details]
-  /// will be assigned to the Note instance variables. If not, defaults will be given.
-  /// [_title] will be set as the title TextField's starting text and [_details] will
-  /// be set to the detials' TextField. The [note] variable will be set to the given
-  /// Note instance.
+  /// if [note] is given to the widget, the default values
+  /// of the TextControllers will be assigned to the given values.
   @override
   void initState() {
     super.initState();
-    _title = widget.note?.title ?? '';
-    _details = widget.note?.details ?? '';
-    titleController = TextEditingController(text: _title);
-    detailsController = TextEditingController(text: _details);
+    _titleController = TextEditingController(text: widget.note?.title);
+    _detailsController = TextEditingController(text: widget.note?.title);
     note = widget.note;
-  }
-
-  /// Sets the [_localization] variable as it needs context and therefore
-  /// can't be initalized in the [initState] method.
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _localizations = AppLocalizations.of(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     // WillPopScope is used so that when the user pop's the route and returns,
     // the result can be processed and returned. It also supports the Android's back button.
     return WillPopScope(
       onWillPop: () async {
+        var title = _titleController.text;
+        var details = _detailsController.text;
+
+        if (title.trim().isEmpty && details.trim().isEmpty) {
+          Navigator.pop(context, null);
+          return true;
+        }
+
         if (note == null) {
-          if (_title.trim().isEmpty && _details.trim().isEmpty) {
-            Navigator.pop(context, null);
-          } else if (_title.trim().isEmpty) {
-            var firstDetailsLine = LineSplitter.split(_details).first;
+          if (title.trim().isEmpty) {
+            final firstDetailsLine = LineSplitter.split(details).first;
             if (firstDetailsLine.length <= 36) {
-              _title = firstDetailsLine;
+              title = firstDetailsLine;
             } else {
-              _title = firstDetailsLine.substring(0, 36);
+              title = firstDetailsLine.substring(0, 36);
             }
-            Navigator.pop(context, Note(_title, _details));
-          } else {
-            Navigator.pop(context, Note(_title, _details));
           }
+          Navigator.pop(context, Note(title, details));
         } else {
-          if (_title.trim().isEmpty && _details.trim().isEmpty) {
-            Navigator.pop(context, null);
-          } else {
-            note?.title = _title;
-            note?.details = _details;
-            Navigator.pop(context, note);
-          }
+          note?.title = title;
+          note?.details = details;
+          Navigator.pop(context, note);
         }
         return true;
       },
@@ -101,11 +81,10 @@ class _NotePageState extends State<NotePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
-                controller: titleController,
-                onChanged: (value) => _title = value,
+                controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: _localizations.titleTextFieldLabel,
-                  hintText: _localizations.titleTextFieldHint,
+                  labelText: localizations.titleTextFieldLabel,
+                  hintText: localizations.titleTextFieldHint,
                 ),
                 textInputAction: TextInputAction.next,
               ),
@@ -114,11 +93,10 @@ class _NotePageState extends State<NotePage> {
               padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 child: TextField(
-                  controller: detailsController,
-                  onChanged: (value) => _details = value,
+                  controller: _detailsController,
                   decoration: InputDecoration(
-                    labelText: _localizations.detailsTextFieldLabel,
-                    hintText: _localizations.detailsTextFieldHint,
+                    labelText: localizations.detailsTextFieldLabel,
+                    hintText: localizations.detailsTextFieldHint,
                   ),
                   autofocus: true,
                   maxLines: null,
@@ -135,8 +113,8 @@ class _NotePageState extends State<NotePage> {
   /// Dispose of the TextControllers so that memory leak doesn't happen.
   @override
   void dispose() {
-    titleController.dispose();
-    detailsController.dispose();
+    _titleController.dispose();
+    _detailsController.dispose();
     super.dispose();
   }
 }

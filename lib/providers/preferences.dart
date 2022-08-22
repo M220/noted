@@ -10,7 +10,7 @@ import 'package:noted/constants.dart';
 /// made in those values. The load method should be called and awaited before this
 /// class can be used.
 class Preferences extends ChangeNotifier {
-  /// Private constructor so that the class can't be instantiated outside of this file.
+  /// Private constructor to use when instantiating an instance inside the file.
   Preferences._privateConstructor();
 
   /// The singleton instance of this class
@@ -25,13 +25,18 @@ class Preferences extends ChangeNotifier {
   /// The user's preferred locale
   late Locale _locale;
 
-  /// The user's preferred theme mode
+  /// The user's preferred theme mode.
+  ///
+  /// Use the [setTheme] method to set a new ThemeMode.
   ThemeMode get themeMode => _themeMode;
 
-  /// The user's preferred locale
+  /// The user's preferred locale.
+  ///
+  /// Use the [setLocale] method to set a new Locale.
   Locale get locale => _locale;
 
-  /// Loads the user's preferences and sets the necessary instance variables
+  /// Loads the user's preferences and sets the necessary instance variables. Should
+  /// be called and awaited before the instance can be used.
   Future<void> load() async {
     _sp = await SharedPreferences.getInstance();
 
