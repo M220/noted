@@ -27,7 +27,7 @@ class App extends StatelessWidget {
               locale: value.locale,
               onGenerateTitle: (context) => AppLocalizations.of(context).title,
               // These two lines are needed for localizations. They set the supported
-              // languages for this app and make the AppLocalization.of callback available.
+              // languages for this app and make the AppLocalizations.of callback available.
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               theme: AppTheme.lightTheme,
@@ -54,9 +54,9 @@ class App extends StatelessWidget {
     );
   }
 
-  /// Makes a custom route with slide up animation.
+  /// Makes a route with a custom slide animation.
   ///
-  /// [route] : The route widget that needs to be animated
+  /// [route] : The route widget that gets animated
   PageRouteBuilder customPageRoute(Widget route) {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 250),

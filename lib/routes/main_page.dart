@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:noted/constants.dart';
 import 'package:noted/data/note.dart';
 import 'package:noted/data/todo.dart';
 import 'package:noted/routes/note_page.dart';
@@ -9,10 +10,12 @@ import 'package:noted/providers/database.dart';
 import 'package:noted/widgets/todo_sheet.dart';
 import 'package:provider/provider.dart';
 
+/// The route widget of the Main page.
 class MainPage extends StatefulWidget {
   /// The name of this route that gets used in navigation
   static const routeName = '/';
 
+  /// Creates a new Main route for the Noted! app.
   const MainPage({super.key});
 
   @override
@@ -21,9 +24,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
-  /// The localization instance containing tranlations
-  late AppLocalizations _localizations;
-
   /// The TabController that manages the tabs and it's animations
   late TabController _tabController;
 
@@ -31,10 +31,10 @@ class _MainPageState extends State<MainPage>
   late int _currentTabIndex;
 
   /// The TextController for the notes' search TextField
-  late TextEditingController _notesSearchController;
+  final _notesSearchController = TextEditingController();
 
   /// The TextController for the Todos' search TextField
-  late TextEditingController _todosSearchController;
+  final _todosSearchController = TextEditingController();
 
   /// Set to true when user taps the FAB and false when the user finishes doing so.
   /// Is used for animations
@@ -50,8 +50,6 @@ class _MainPageState extends State<MainPage>
   @override
   void initState() {
     super.initState();
-    _notesSearchController = TextEditingController();
-    _todosSearchController = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
     _currentTabIndex = _tabController.index;
     _tabController.animation!.addListener(
@@ -74,16 +72,18 @@ class _MainPageState extends State<MainPage>
     );
   }
 
-  /// Sets the [_localization] variable as it needs context and therefore
-  /// can't be initalized in the [initState] method.
+  /// Precaches the icon of the app that will be used on the about dialog so that
+  /// it doesn't 'pop up' when the dialog gets built for the first time.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _localizations = AppLocalizations.of(context);
+    precacheImage(const AssetImage(iconAssetPath), context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     // Listener is used so that the search field can unfocus when the user taps
     // outside of the TextField
     return Listener(
@@ -96,14 +96,14 @@ class _MainPageState extends State<MainPage>
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text(_localizations.title),
+          title: Text(localizations.title),
           centerTitle: true,
           bottom: TabBar(
             controller: _tabController,
             tabs: [
               Tab(
                   child: Text(
-                _localizations.notesTabTitle,
+                localizations.notesTabTitle,
                 style: TextStyle(
                     color: Theme.of(context).brightness == Brightness.light
                         ? Colors.black
@@ -111,7 +111,7 @@ class _MainPageState extends State<MainPage>
               )),
               Tab(
                   child: Text(
-                _localizations.todoTabTitle,
+                localizations.todoTabTitle,
                 style: TextStyle(
                     color: Theme.of(context).brightness == Brightness.light
                         ? Colors.black
@@ -134,14 +134,14 @@ class _MainPageState extends State<MainPage>
                     color: Theme.of(context).colorScheme.inversePrimary),
                 child: Center(
                   child: Text(
-                    _localizations.title,
+                    localizations.title,
                     style: const TextStyle(
                       fontSize: 40,
                     ),
                   ),
                 )),
             ListTile(
-              title: Text(_localizations.settings),
+              title: Text(localizations.settings),
               leading: const Icon(Icons.settings),
               onTap: () {
                 Navigator.pop(context);
@@ -154,17 +154,15 @@ class _MainPageState extends State<MainPage>
               indent: 10,
               endIndent: 10,
             ),
-            ListTile(
-              title: Text(_localizations.about),
-              leading: const Icon(Icons.info),
-              onTap: () {
-                Navigator.pop(context);
-                showAboutDialog(
-                    context: context,
-                    applicationVersion: _localizations.appVersion,
-                    children: [Text(_localizations.aboutDescription)]);
-              },
-              style: ListTileStyle.drawer,
+            AboutListTile(
+              applicationIcon: Image.asset(
+                iconAssetPath,
+                height: 50,
+              ),
+              applicationName: localizations.title,
+              applicationVersion: localizations.appVersion,
+              icon: const Icon(Icons.info),
+              aboutBoxChildren: [Text(localizations.aboutDescription)],
             )
           ]),
         ),
@@ -207,7 +205,7 @@ class _MainPageState extends State<MainPage>
                 context.read<Database>().addTodo(todo);
               }
             },
-            tooltip: _localizations.fabTooltip,
+            tooltip: localizations.fabTooltip,
             child: const Icon(Icons.mode_edit_rounded),
           ),
         ),
@@ -217,6 +215,8 @@ class _MainPageState extends State<MainPage>
 
   /// The notes tab widget
   Consumer<Database> _buildNotesTabView() {
+    final localizations = AppLocalizations.of(context);
+
     return Consumer<Database>(builder: (context, value, child) {
       return Column(
         children: [
@@ -227,7 +227,7 @@ class _MainPageState extends State<MainPage>
               decoration: InputDecoration(
                 isDense: true,
                 prefixIcon: const Icon(Icons.search),
-                labelText: _localizations.searchFieldLabel,
+                labelText: localizations.searchFieldLabel,
               ),
               onTap: () {
                 value.filterNotes(_notesSearchController.text);
@@ -257,7 +257,7 @@ class _MainPageState extends State<MainPage>
                             children: [
                               const Icon(Icons.event_note_outlined, size: 48),
                               Text(
-                                _localizations.emptyNoteListText,
+                                localizations.emptyNoteListText,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 20),
                               )
@@ -301,7 +301,7 @@ class _MainPageState extends State<MainPage>
                             maxLines: 1,
                           ),
                           onTap: () async {
-                            var note = await Navigator.pushNamed(
+                            final note = await Navigator.pushNamed(
                                 context, NotePage.routeName,
                                 arguments: value.notes[index]) as Note?;
                             if (!mounted) return;
@@ -323,6 +323,8 @@ class _MainPageState extends State<MainPage>
 
   /// The todos tab widget
   Consumer<Database> _buildTodoTabView() {
+    final localizations = AppLocalizations.of(context);
+
     return Consumer<Database>(builder: (context, value, child) {
       return Column(
         children: [
@@ -333,7 +335,7 @@ class _MainPageState extends State<MainPage>
               decoration: InputDecoration(
                 isDense: true,
                 prefixIcon: const Icon(Icons.search),
-                labelText: _localizations.searchFieldLabel,
+                labelText: localizations.searchFieldLabel,
               ),
               onChanged: (searchValue) {
                 value.filterTodos(searchValue);
@@ -359,7 +361,7 @@ class _MainPageState extends State<MainPage>
                             children: [
                               const Icon(Icons.checklist_rounded, size: 48),
                               Text(
-                                _localizations.emptyTodoListText,
+                                localizations.emptyTodoListText,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 20),
                               )

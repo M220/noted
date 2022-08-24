@@ -15,134 +15,124 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  /// The localization instance containing tranlations
-  late AppLocalizations _localizations;
-
-  /// Sets the [_localization] variable as it needs context and therefore
-  /// can't be initalized in the [initState] method.
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _localizations = AppLocalizations.of(context);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_localizations.settings),
+        title: Text(localizations.settings),
         centerTitle: true,
       ),
       body: ListView(children: [
         // The theme preferences ListTile
         ListTile(
-          title: Text(_localizations.theme),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: ((context) {
-                ThemeMode? themeMode = context.read<Preferences>().themeMode;
-
-                return AlertDialog(
-                  title: Text(_localizations.themeDialogTitle),
-                  actions: [
-                    TextButton(
-                        onPressed: (() => Navigator.pop(context)),
-                        child: Text(_localizations.cancelButtonText)),
-                    TextButton(
-                        onPressed: () {
-                          context.read<Preferences>().setTheme(themeMode!);
-                          Navigator.pop(context);
-                        },
-                        child: Text(_localizations.okButtonText))
-                  ],
-                  content: StatefulBuilder(
-                    builder: (context, setStateDialog) => SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile<ThemeMode>(
-                              title: Text(_localizations.lightTheme),
-                              value: ThemeMode.light,
-                              groupValue: themeMode,
-                              onChanged: ((value) => setStateDialog(() {
-                                    themeMode = value;
-                                  }))),
-                          RadioListTile<ThemeMode>(
-                              title: Text(_localizations.darkTheme),
-                              value: ThemeMode.dark,
-                              groupValue: themeMode,
-                              onChanged: ((value) => setStateDialog(() {
-                                    themeMode = value;
-                                  }))),
-                          RadioListTile<ThemeMode>(
-                              title: Text(_localizations.systemTheme),
-                              value: ThemeMode.system,
-                              groupValue: themeMode,
-                              onChanged: ((value) => setStateDialog(() {
-                                    themeMode = value;
-                                  }))),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            );
-          },
+          title: Text(localizations.theme),
+          onTap: () => showDialog(
+            context: context,
+            builder: _buildThemeChoicesDialog,
+          ),
         ),
         const Divider(),
         // The localization preferences ListTile
         ListTile(
-          title: Text(_localizations.language),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: ((context) {
-                Locale? locale = context.read<Preferences>().locale;
-
-                return AlertDialog(
-                  title: Text(_localizations.languageDialogTitle),
-                  actions: [
-                    TextButton(
-                        onPressed: (() => Navigator.pop(context)),
-                        child: Text(_localizations.cancelButtonText)),
-                    TextButton(
-                        onPressed: () {
-                          context.read<Preferences>().setLocale(locale!);
-                          Navigator.pop(context);
-                        },
-                        child: Text(_localizations.okButtonText))
-                  ],
-                  content: StatefulBuilder(
-                    builder: (context, setStateDialog) => SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile<Locale>(
-                              title: Text(_localizations.english),
-                              value: const Locale('en'),
-                              groupValue: locale,
-                              onChanged: ((value) => setStateDialog(() {
-                                    locale = value;
-                                  }))),
-                          RadioListTile<Locale>(
-                              title: Text(_localizations.persian),
-                              value: const Locale('fa'),
-                              groupValue: locale,
-                              onChanged: ((value) => setStateDialog(() {
-                                    locale = value;
-                                  }))),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            );
-          },
+          title: Text(localizations.language),
+          onTap: () => showDialog(
+            context: context,
+            builder: _buildLocaleChoicesDialog,
+          ),
         ),
       ]),
+    );
+  }
+
+  /// The dialog that will be shown when the user taps on the theme settings.
+  /// The user can then cahnge the theme of the app by tapping one of the options.
+  static AlertDialog _buildThemeChoicesDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    ThemeMode? themeMode = context.read<Preferences>().themeMode;
+
+    return AlertDialog(
+      title: Text(localizations.themeDialogTitle),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(localizations.cancelButtonText)),
+        TextButton(
+            onPressed: () {
+              context.read<Preferences>().setTheme(themeMode!);
+              Navigator.pop(context);
+            },
+            child: Text(localizations.okButtonText))
+      ],
+      content: StatefulBuilder(
+        builder: (context, setStateDialog) => SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<ThemeMode>(
+                  title: Text(localizations.lightTheme),
+                  value: ThemeMode.light,
+                  groupValue: themeMode,
+                  onChanged: (value) =>
+                      setStateDialog(() => themeMode = value)),
+              RadioListTile<ThemeMode>(
+                  title: Text(localizations.darkTheme),
+                  value: ThemeMode.dark,
+                  groupValue: themeMode,
+                  onChanged: (value) =>
+                      setStateDialog(() => themeMode = value)),
+              RadioListTile<ThemeMode>(
+                  title: Text(localizations.systemTheme),
+                  value: ThemeMode.system,
+                  groupValue: themeMode,
+                  onChanged: (value) =>
+                      setStateDialog(() => themeMode = value)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The dialog that will be shown when the user taps on the languages settings.
+  /// The user can then cahnge the language of the app by tapping one of the options.
+  static AlertDialog _buildLocaleChoicesDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    Locale? locale = context.read<Preferences>().locale;
+
+    return AlertDialog(
+      title: Text(localizations.languageDialogTitle),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(localizations.cancelButtonText)),
+        TextButton(
+            onPressed: () {
+              if (locale == null) return;
+              context.read<Preferences>().setLocale(locale!);
+              Navigator.pop(context);
+            },
+            child: Text(localizations.okButtonText))
+      ],
+      content: StatefulBuilder(
+        builder: (context, setState) => SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<Locale>(
+                  title: Text(localizations.english),
+                  value: const Locale('en'),
+                  groupValue: locale,
+                  onChanged: (value) => setState(() => locale = value)),
+              RadioListTile<Locale>(
+                  title: Text(localizations.persian),
+                  value: const Locale('fa'),
+                  groupValue: locale,
+                  onChanged: (value) => setState(() => locale = value)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

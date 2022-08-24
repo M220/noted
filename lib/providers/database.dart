@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 /// made in those databases. The load method should be called and awaited before this
 /// class can be used.
 class Database with ChangeNotifier {
-  /// Private constructor so that the class can't be instantiated outside of this file.
+  /// Private constructor to use when instantiating an instance inside the file.
   Database._privateConstructor();
 
   /// The singleton instance of this class
@@ -24,14 +24,18 @@ class Database with ChangeNotifier {
   /// The list containing all the user's todos.
   late List<Todo> _todos;
 
-  /// The list containing all the user's notes
+  /// The list containing all the user's notes. Don't change the list directly.
+  /// Use the given methods instead.
   List<Note> get notes => _notes.reversed.toList();
 
-  /// The list containing all the user's todos.
+  /// The list containing all the user's todos. Don't change the list directly.
+  /// Use the given methods instead.
   List<Todo> get todos => _todos.reversed.toList();
 
-  /// Loads the Isar database instance and assigns the necessary variables.
+  /// Loads the Isar database instance and assigns the necessary variables. Should
+  /// be called and awaited before the instance can be used.
   Future<void> load() async {
+    if (Isar.getInstance() != null) return;
     // Retreive the current saved notes and TODOs.
     final dir = await getApplicationSupportDirectory();
     _database = await Isar.open([NoteSchema, TodoSchema], directory: dir.path);
@@ -47,14 +51,16 @@ class Database with ChangeNotifier {
     _todos = [];
   }
 
-  /// Adds a new note and saves it in the database.
+  /// Adds a new note and saves it in the database. [note] is the instance of [Note]
+  /// that will be added.
   Future<void> addNote(Note note) async {
     await _database.writeTxn(() async => await _database.notes.put(note));
     _notes = await _database.notes.where().findAll();
     notifyListeners();
   }
 
-  /// Modifies a note and saves it in the database.
+  /// Modifies a note and saves it in the database. [note] is the instance of [Note]
+  /// that will be modified.
   Future<void> modifyNote(Note note) async {
     await _database.writeTxn(() async => await _database.notes.put(note));
     _notes = await _database.notes.where().findAll();
@@ -87,7 +93,8 @@ class Database with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Adds a new todo and saves it in the database.
+  /// Adds a new todo and saves it in the database. [todo] is the instance of [Todo]
+  /// that will be added.
   Future<void> addTodo(Todo todo) async {
     await _database.writeTxn(() async => await _database.todos.put(todo));
     _todos = await _database.todos.where().findAll();
