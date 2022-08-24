@@ -35,6 +35,8 @@ class App extends StatelessWidget {
               themeMode: value.themeMode,
               onGenerateRoute: (settings) {
                 if (settings.name == NotePage.routeName) {
+                  // We have to cast settings.argument to Map<Object?, Object?>?
+                  // If we don't, the state restoration API will throw an error.
                   return customPageRoute(NotePage(
                     noteValues: settings.arguments as Map<Object?, Object?>?,
                   ));

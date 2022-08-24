@@ -59,37 +59,10 @@ class Database with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Adds a new note and saves it in the database. The [title] and [details] of
-  /// the note that's to be added should be given.
-  Future<void> addNoteExplicit(
-      {required String title, required String details}) async {
-    final note = Note(title, details);
-    await _database.writeTxn(() async => await _database.notes.put(note));
-    _notes = await _database.notes.where().findAll();
-    notifyListeners();
-  }
-
   /// Modifies a note and saves it in the database. [note] is the instance of [Note]
   /// that will be modified.
   Future<void> modifyNote(Note note) async {
     await _database.writeTxn(() async => await _database.notes.put(note));
-    _notes = await _database.notes.where().findAll();
-    notifyListeners();
-  }
-
-  /// Modifies a note and saves it in the database. The [id], [title] and [details] of
-  /// the note that's to be modified should be given.
-  Future<void> modifyNoteExplicit(
-      {required Id id, required String title, required String details}) async {
-    Note? selectedNote;
-    await _database.txn(() async {
-      selectedNote = await _database.notes.where().idEqualTo(id).findFirst();
-    });
-    if (selectedNote == null) return;
-    selectedNote!.title = title;
-    selectedNote!.details = details;
-    await _database
-        .writeTxn(() async => await _database.notes.put(selectedNote!));
     _notes = await _database.notes.where().findAll();
     notifyListeners();
   }
@@ -128,36 +101,9 @@ class Database with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Adds a new todo and saves it in the database. The [title] and [checked] of
-  /// the todo that's to be added should be given.
-  Future<void> addTodoExplicit(
-      {required String title, required bool checked}) async {
-    final todo = Todo(title, checked);
-    await _database.writeTxn(() async => await _database.todos.put(todo));
-    _todos = await _database.todos.where().findAll();
-    notifyListeners();
-  }
-
   /// Modifies a note and saves it in the database.
   Future<void> modifyTodo(Todo todo) async {
     await _database.writeTxn(() async => await _database.todos.put(todo));
-    _todos = await _database.todos.where().findAll();
-    notifyListeners();
-  }
-
-  /// modifies a todo and saves it in the database. The [id], [title] and [checked]
-  /// of the todo that's to be modified should be given.
-  Future<void> modifyTodoExplicit(
-      {required Id id, required String title, required bool checked}) async {
-    Todo? selectedTodo;
-    await _database.txn(() async {
-      selectedTodo = await _database.todos.where().idEqualTo(id).findFirst();
-    });
-    if (selectedTodo == null) return;
-    selectedTodo!.title = title;
-    selectedTodo!.checked = checked;
-    await _database
-        .writeTxn(() async => await _database.todos.put(selectedTodo!));
     _todos = await _database.todos.where().findAll();
     notifyListeners();
   }

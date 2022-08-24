@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:noted/constants.dart';
+import 'package:noted/data/note.dart';
 import 'package:noted/data/todo.dart';
 import 'package:noted/routes/note_page.dart';
 import 'package:noted/routes/settings_page.dart';
@@ -250,14 +251,13 @@ class _MainPageState extends State<MainPage>
     if (noteValues == null) return;
 
     // Add if note is modified which is the case if the map has an id key.
-    if (!noteValues.containsKey('id')) {
-      context.read<Database>().addNoteExplicit(
-          title: noteValues['title'], details: noteValues['details']);
+    if (!noteValues.containsKey(idKey)) {
+      final note = Note(noteValues[titleKey], noteValues[detailsKey]);
+      context.read<Database>().addNote(note);
     } else {
-      context.read<Database>().modifyNoteExplicit(
-          id: noteValues['id'],
-          title: noteValues['title'],
-          details: noteValues['details']);
+      final note = Note(noteValues[titleKey], noteValues[detailsKey])
+        ..id = noteValues[idKey];
+      context.read<Database>().modifyNote(note);
     }
   }
 
@@ -350,9 +350,9 @@ class _MainPageState extends State<MainPage>
                           ),
                           onTap: () async {
                             _restorableNotesRoute.present(<String, dynamic>{
-                              'id': value.notes[index].id,
-                              'title': value.notes[index].title,
-                              'details': value.notes[index].details,
+                              idKey: value.notes[index].id,
+                              titleKey: value.notes[index].title,
+                              detailsKey: value.notes[index].details,
                             });
                           },
                         ),

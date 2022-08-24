@@ -44,7 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// The dialog that will be shown when the user taps on the theme settings.
   /// The user can then cahnge the theme of the app by tapping one of the options.
-  static Route<dynamic> _buildThemeChoicesDialog(
+  static Route _buildThemeChoicesDialog(
       BuildContext context, Object? arguments) {
     return DialogRoute(
       context: context,
@@ -56,7 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text(localizations.themeDialogTitle),
           actions: [
             TextButton(
-                onPressed: (() => Navigator.pop(context)),
+                onPressed: () => Navigator.pop(context),
                 child: Text(localizations.cancelButtonText)),
             TextButton(
                 onPressed: () {
@@ -75,20 +75,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: Text(localizations.lightTheme),
                       value: ThemeMode.light,
                       groupValue: themeMode,
-                      onChanged: ((value) =>
-                          setState(() => themeMode = value))),
+                      onChanged: (value) => setState(() => themeMode = value)),
                   RadioListTile<ThemeMode>(
                       title: Text(localizations.darkTheme),
                       value: ThemeMode.dark,
                       groupValue: themeMode,
-                      onChanged: ((value) =>
-                          setState(() => themeMode = value))),
+                      onChanged: (value) => setState(() => themeMode = value)),
                   RadioListTile<ThemeMode>(
                       title: Text(localizations.systemTheme),
                       value: ThemeMode.system,
                       groupValue: themeMode,
-                      onChanged: ((value) =>
-                          setState(() => themeMode = value))),
+                      onChanged: (value) => setState(() => themeMode = value)),
                 ],
               ),
             ),
@@ -100,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// The dialog that will be shown when the user taps on the languages settings.
   /// The user can then cahnge the language of the app by tapping one of the options.
-  static Route<dynamic> _buildLocaleChoicesDialog(
+  static Route _buildLocaleChoicesDialog(
       BuildContext context, Object? arguments) {
     return DialogRoute(
       context: context,
@@ -112,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text(localizations.languageDialogTitle),
           actions: [
             TextButton(
-                onPressed: (() => Navigator.pop(context)),
+                onPressed: () => Navigator.pop(context),
                 child: Text(localizations.cancelButtonText)),
             TextButton(
                 onPressed: () {
@@ -131,12 +128,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: Text(localizations.english),
                       value: const Locale('en'),
                       groupValue: locale,
-                      onChanged: ((value) => setState(() => locale = value))),
+                      onChanged: (value) => setState(() => locale = value)),
                   RadioListTile<Locale>(
                       title: Text(localizations.persian),
                       value: const Locale('fa'),
                       groupValue: locale,
-                      onChanged: ((value) => setState(() => locale = value))),
+                      onChanged: (value) => setState(() => locale = value)),
                 ],
               ),
             ),

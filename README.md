@@ -26,4 +26,4 @@ To test state restoration on Android:
 
 4- Background the Flutter app, then return to it. It will restart and restore its state.
 
-Note: ModalBottomSheets are currently not supported when it comes to state restoration, so the Todo sheet dialog will not restore it's state. Other parts of the app should restore their state without issue.
+Note: ModalBottomSheets are currently not supported when it comes to state restoration, so the Todo sheet dialog will not restore it's state. Other parts of the app should restore their state without issue. Dialogs (apparently) also can't restore their content to the previous state. For example if you choose an option in the theme dialog, and then kill the app and restore it, the Dialog Route itself will restore, but your choice will be lost. I have messed around with the API to be able to restore it's state, but it seems like it can also be an API limitation.

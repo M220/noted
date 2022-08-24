@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:noted/data/note.dart';
 
+const idKey = 'id';
+const titleKey = 'title';
+const detailsKey = 'detials';
+
 /// The route widget of the Note page. Awaiting this route may result in a new or modified instance
 /// of [Note]. The [noteValues] parameter can be set if an existing note is being modified.
 class NotePage extends StatefulWidget {
@@ -43,9 +47,9 @@ class _NotePageState extends State<NotePage> with RestorationMixin {
   void initState() {
     super.initState();
     _titleController =
-        RestorableTextEditingController(text: widget.noteValues?['title']);
+        RestorableTextEditingController(text: widget.noteValues?[titleKey]);
     _detailsController =
-        RestorableTextEditingController(text: widget.noteValues?['details']);
+        RestorableTextEditingController(text: widget.noteValues?[detailsKey]);
   }
 
   /// The restorationId that will be used to find and restore this route's variables.
@@ -71,13 +75,14 @@ class _NotePageState extends State<NotePage> with RestorationMixin {
       onWillPop: () async {
         var title = _titleController.value.text;
         var details = _detailsController.value.text;
+        final noteValues = widget.noteValues;
 
         if (title.trim().isEmpty && details.trim().isEmpty) {
           Navigator.pop(context, null);
           return true;
         }
-        
-        if (widget.noteValues == null) {
+
+        if (noteValues == null) {
           if (title.trim().isEmpty) {
             final firstDetailsLine = LineSplitter.split(details).first;
             if (firstDetailsLine.length <= 36) {
@@ -87,14 +92,14 @@ class _NotePageState extends State<NotePage> with RestorationMixin {
             }
           }
           final newNoteValues = <String, dynamic>{
-            'title': title,
-            'details': details,
+            titleKey: title,
+            detailsKey: details,
           };
           Navigator.pop(context, newNoteValues);
         } else {
-          widget.noteValues?['title'] = title;
-          widget.noteValues?['details'] = details;
-          Navigator.pop(context, widget.noteValues);
+          noteValues[titleKey] = title;
+          noteValues[detailsKey] = details;
+          Navigator.pop(context, noteValues);
         }
         return true;
       },

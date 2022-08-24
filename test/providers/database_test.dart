@@ -18,16 +18,6 @@ void main() {
       await database.clearDatabase();
     });
 
-    test('Adding a note (Explicit)', () async {
-      expect(database.notes.isEmpty, true);
-      final testNote = Note('title', 'details');
-      await database.addNoteExplicit(
-          title: testNote.title, details: testNote.details);
-      expect(database.notes.single.id, 1);
-      expect(database.notes.single.title, 'title');
-      expect(database.notes.single.details, 'details');
-    });
-
     test('Adding a new note (normal)', () async {
       expect(database.notes.isEmpty, true);
       final testNote = Note('title', 'details');
@@ -99,16 +89,6 @@ void main() {
 
     setUp(() async {
       await database.clearDatabase();
-    });
-
-    test('Adding a todo (Explicit)', () async {
-      expect(database.todos.isEmpty, true);
-      final testTodo = Todo('title', true);
-      await database.addTodoExplicit(
-          title: testTodo.title, checked: testTodo.checked);
-      expect(database.todos.single.id, 1);
-      expect(database.todos.single.title, 'title');
-      expect(database.todos.single.checked, true);
     });
 
     test('Adding a todo', () async {
