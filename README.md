@@ -1,6 +1,6 @@
 # Noted!
 
-A simple notes and todo app, written with Flutter.
+A simple notes and todo app, written with Flutter. This app is written mostly with Android platform in mind as I don't have acces to a mac, and I also only use windows for testing purposes. Although the app should at least compile for other platforms as well, including Linux, Mac OS, Windows, Web and IOS.
 
 TODO:
 - ~~Change the settings page's Dropdowns to Material Alert Dialogs~~

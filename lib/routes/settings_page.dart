@@ -55,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
       title: Text(localizations.themeDialogTitle),
       actions: [
         TextButton(
-            onPressed: (() => Navigator.pop(context)),
+            onPressed: () => Navigator.pop(context),
             child: Text(localizations.cancelButtonText)),
         TextButton(
             onPressed: () {
@@ -104,7 +104,7 @@ class _SettingsPageState extends State<SettingsPage> {
       title: Text(localizations.languageDialogTitle),
       actions: [
         TextButton(
-            onPressed: (() => Navigator.pop(context)),
+            onPressed: () => Navigator.pop(context),
             child: Text(localizations.cancelButtonText)),
         TextButton(
             onPressed: () {

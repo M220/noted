@@ -20,9 +20,6 @@ class NotePage extends StatefulWidget {
 }
 
 class _NotePageState extends State<NotePage> {
-  /// The [Note] instance received from the widget
-  Note? note;
-
   /// The textController for the title's TextField
   late TextEditingController _titleController;
 
@@ -38,7 +35,6 @@ class _NotePageState extends State<NotePage> {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title);
     _detailsController = TextEditingController(text: widget.note?.title);
-    note = widget.note;
   }
 
   @override
@@ -51,6 +47,7 @@ class _NotePageState extends State<NotePage> {
       onWillPop: () async {
         var title = _titleController.text;
         var details = _detailsController.text;
+        final note = widget.note;
 
         if (title.trim().isEmpty && details.trim().isEmpty) {
           Navigator.pop(context, null);
@@ -68,8 +65,8 @@ class _NotePageState extends State<NotePage> {
           }
           Navigator.pop(context, Note(title, details));
         } else {
-          note?.title = title;
-          note?.details = details;
+          note.title = title;
+          note.details = details;
           Navigator.pop(context, note);
         }
         return true;
