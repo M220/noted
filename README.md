@@ -4,10 +4,12 @@ A simple notes and todo app, written with Flutter. This app is written mostly wi
 
 TODO:
 - ~~Change the settings page's Dropdowns to Material Alert Dialogs~~
-- Add state restoration
 - Add sharing functionality
-- Use Navigation 2/Go Route (?)
 - Complete the widget tests
 - Add Undo/Redo
 
 Design and overall suggestions are welcome!
+
+## Branch Specific
+
+This branch will use "Go Route" as the navigation solution for declarative navigation instead of Navigator 1's implicit one. It's basically base + Navigator 2, and so it will not support state restoration.
