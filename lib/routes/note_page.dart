@@ -34,7 +34,7 @@ class _NotePageState extends State<NotePage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title);
-    _detailsController = TextEditingController(text: widget.note?.title);
+    _detailsController = TextEditingController(text: widget.note?.details);
   }
 
   @override
