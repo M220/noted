@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:noted/data/note.dart';
 import 'package:noted/providers/preferences.dart';
 import 'package:noted/routes/main_page.dart';
@@ -11,7 +12,7 @@ import 'package:provider/provider.dart';
 /// This class defines the general outline of the app, it's themes, locales, routes
 /// and other settings that are related to the class containing the [MaterialApp] instance
 class App extends StatelessWidget {
-  const App({super.key});
+  App({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,10 @@ class App extends StatelessWidget {
         return AnimatedBuilder(
           animation: value,
           builder: (context, _) {
-            return MaterialApp(
+            return MaterialApp.router(
+              routeInformationProvider: _router.routeInformationProvider,
+              routeInformationParser: _router.routeInformationParser,
+              routerDelegate: _router.routerDelegate,
               locale: value.locale,
               onGenerateTitle: (context) => AppLocalizations.of(context).title,
               // These two lines are needed for localizations. They set the supported
@@ -33,20 +37,6 @@ class App extends StatelessWidget {
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
               themeMode: value.themeMode,
-              onGenerateRoute: (settings) {
-                if (settings.name == NotePage.routeName) {
-                  var note = settings.arguments as Note?;
-                  return customPageRoute(NotePage(
-                    note: note,
-                  ));
-                } else if (settings.name == SettingsPage.routeName) {
-                  return customPageRoute(const SettingsPage());
-                }
-                return null;
-              },
-              routes: {
-                MainPage.routeName: (context) => const MainPage(),
-              },
             );
           },
         );
@@ -54,15 +44,75 @@ class App extends StatelessWidget {
     );
   }
 
+  /// The GoRouter instance that will be used for this app's declarative navigation
+  final _router = GoRouter(
+    initialLocation: MainPage.routeName,
+    urlPathStrategy: UrlPathStrategy.path,
+    routes: [
+      GoRoute(
+          path: MainPage.routeName,
+          name: MainPage.routeName,
+          pageBuilder: (context, state) =>
+              customPageTransition(const MainPage(), state),
+          routes: [
+            GoRoute(
+                path: NotePage.routeName,
+                name: NotePage.routeName,
+                pageBuilder: (context, state) => customPageTransition(
+                    NotePage(note: state.extra as Note?), state)),
+            // Use like this: context.goNamed('newNoteWithParams',
+            // params: {'title' : 'Example Title', 'details' : 'Example details'});
+            GoRoute(
+                path: '${NotePage.routeName}/:title&:details',
+                name: 'newNoteWithParams',
+                pageBuilder: (context, state) {
+                  return customPageTransition(
+                      NotePage(
+                          note: Note(state.params['title']!,
+                              state.params['details']!)),
+                      state);
+                }),
+            GoRoute(
+              path: SettingsPage.routeName,
+              name: SettingsPage.routeName,
+              pageBuilder: (context, state) =>
+                  customPageTransition(const SettingsPage(), state),
+            ),
+            // Use like this: context.goNamed('homeWithParams',
+            // params: {'tab' : '1'}, queryParams: {'q' : 'query'});
+            // Or like this: context.go('/1?q=query');
+            GoRoute(
+                path: ':tab',
+                name: 'homeWithParams',
+                builder: (context, state) {
+                  final int tab;
+                  final String query;
+                  tab = state.params.containsKey('tab')
+                      ? int.parse(state.params['tab']!)
+                      : 0;
+                  query = state.queryParams.containsKey('q')
+                      ? state.queryParams['q']!
+                      : '';
+                  return MainPage(
+                    tab: tab,
+                    query: query,
+                  );
+                })
+          ]),
+    ],
+  );
+
   /// Makes a route with a custom slide animation.
   ///
   /// [route] : The route widget that gets animated
-  PageRouteBuilder customPageRoute(Widget route) {
-    return PageRouteBuilder(
+  static CustomTransitionPage customPageTransition(
+      Widget route, GoRouterState state) {
+    return CustomTransitionPage(
+      key: state.pageKey,
+      restorationId: state.pageKey.value,
+      child: route,
       transitionDuration: const Duration(milliseconds: 250),
-      reverseTransitionDuration: const Duration(milliseconds: 250),
       barrierColor: Colors.black54,
-      pageBuilder: (context, animation, secondaryAnimation) => route,
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           SlideTransition(
         position:

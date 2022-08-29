@@ -24,7 +24,7 @@ void main() async {
         ChangeNotifierProvider.value(value: Preferences.instance()),
         ChangeNotifierProvider.value(value: Database.instance()),
       ],
-      child: const App(),
+      child: App(),
     ),
   );
 }

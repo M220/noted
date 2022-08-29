@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:noted/data/note.dart';
+import 'package:noted/providers/database.dart';
+import 'package:provider/provider.dart';
 
 /// The route widget of the Note page. Awaiting this route may result in a new or modified instance
 /// of [Note]. The [note] parameter can be set if an existing note is being modified.
 class NotePage extends StatefulWidget {
   /// The name of this route that gets used in navigation
-  static const routeName = '/NotePage';
+  static const routeName = 'note-page';
 
   /// The [Note] instance that is getting modified. Set to null for new Todos.
   final Note? note;
@@ -34,7 +36,7 @@ class _NotePageState extends State<NotePage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title);
-    _detailsController = TextEditingController(text: widget.note?.title);
+    _detailsController = TextEditingController(text: widget.note?.details);
   }
 
   @override
@@ -50,7 +52,6 @@ class _NotePageState extends State<NotePage> {
         final note = widget.note;
 
         if (title.trim().isEmpty && details.trim().isEmpty) {
-          Navigator.pop(context, null);
           return true;
         }
 
@@ -63,11 +64,11 @@ class _NotePageState extends State<NotePage> {
               title = firstDetailsLine.substring(0, 36);
             }
           }
-          Navigator.pop(context, Note(title, details));
+          context.read<Database>().addNote(Note(title, details));
         } else {
           note.title = title;
           note.details = details;
-          Navigator.pop(context, note);
+          context.read<Database>().modifyNote(note);
         }
         return true;
       },

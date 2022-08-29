@@ -7,72 +7,85 @@ part of 'todo.dart';
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, avoid_js_rounded_ints, prefer_final_locals
 
 extension GetTodoCollection on Isar {
-  IsarCollection<Todo> get todos => collection();
+  IsarCollection<Todo> get todos => this.collection();
 }
 
 const TodoSchema = CollectionSchema(
   name: r'Todo',
-  schema:
-      r'{"name":"Todo","idName":"id","properties":[{"name":"checked","type":"Bool"},{"name":"title","type":"String"}],"indexes":[{"name":"title","unique":false,"replace":false,"properties":[{"name":"title","type":"Value","caseSensitive":false}]}],"links":[]}',
-  idName: r'id',
-  propertyIds: {r'checked': 0, r'title': 1},
-  listProperties: {},
-  indexIds: {r'title': 0},
-  indexValueTypes: {
-    r'title': [
-      IndexValueType.stringCIS,
-    ]
+  id: -505491818817781703,
+  properties: {
+    r'checked': PropertySchema(
+      id: 0,
+      name: r'checked',
+      type: IsarType.bool,
+    ),
+    r'title': PropertySchema(
+      id: 1,
+      name: r'title',
+      type: IsarType.string,
+    )
   },
-  linkIds: {},
-  backlinkLinkNames: {},
-  getId: _todoGetId,
-  setId: _todoSetId,
-  getLinks: _todoGetLinks,
-  attachLinks: _todoAttachLinks,
+  estimateSize: _todoEstimateSize,
   serializeNative: _todoSerializeNative,
   deserializeNative: _todoDeserializeNative,
   deserializePropNative: _todoDeserializePropNative,
   serializeWeb: _todoSerializeWeb,
   deserializeWeb: _todoDeserializeWeb,
   deserializePropWeb: _todoDeserializePropWeb,
-  version: 4,
+  idName: r'id',
+  indexes: {
+    r'title': IndexSchema(
+      id: -7636685945352118059,
+      name: r'title',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'title',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
+  links: {},
+  embeddedSchemas: {},
+  getId: _todoGetId,
+  getLinks: _todoGetLinks,
+  attach: _todoAttach,
+  version: 5,
 );
 
-int? _todoGetId(Todo object) {
-  if (object.id == Isar.autoIncrement) {
-    return null;
-  } else {
-    return object.id;
-  }
+int _todoEstimateSize(
+  Todo object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.title.length * 3;
+  return bytesCount;
 }
 
-void _todoSetId(Todo object, int id) {
-  object.id = id;
-}
-
-List<IsarLinkBase<dynamic>> _todoGetLinks(Todo object) {
-  return [];
-}
-
-void _todoSerializeNative(IsarCollection<Todo> collection, IsarCObject cObj,
-    Todo object, int staticSize, List<int> offsets, AdapterAlloc alloc) {
-  final title$Bytes = IsarBinaryWriter.utf8Encoder.convert(object.title);
-  final size = (staticSize + 3 + (title$Bytes.length)) as int;
-  cObj.buffer = alloc(size);
-  cObj.buffer_length = size;
-
-  final buffer = IsarNative.bufAsBytes(cObj.buffer, size);
-  final writer = IsarBinaryWriter(buffer, staticSize);
-  writer.writeHeader();
+int _todoSerializeNative(
+  Todo object,
+  IsarBinaryWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   writer.writeBool(offsets[0], object.checked);
-  writer.writeByteList(offsets[1], title$Bytes);
+  writer.writeString(offsets[1], object.title);
+  return writer.usedBytes;
 }
 
-Todo _todoDeserializeNative(IsarCollection<Todo> collection, int id,
-    IsarBinaryReader reader, List<int> offsets) {
+Todo _todoDeserializeNative(
+  int id,
+  IsarBinaryReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   final object = Todo(
     reader.readString(offsets[1]),
     reader.readBool(offsets[0]),
@@ -82,50 +95,54 @@ Todo _todoDeserializeNative(IsarCollection<Todo> collection, int id,
 }
 
 P _todoDeserializePropNative<P>(
-    int id, IsarBinaryReader reader, int propertyIndex, int offset) {
-  switch (propertyIndex) {
-    case -1:
-      return id as P;
+  Id id,
+  IsarBinaryReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
     case 0:
       return (reader.readBool(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
     default:
-      throw IsarError('Illegal propertyIndex');
+      throw IsarError('Unknown property with id $propertyId');
   }
 }
 
 Object _todoSerializeWeb(IsarCollection<Todo> collection, Todo object) {
-  final jsObj = IsarNative.newJsObject();
-  IsarNative.jsObjectSet(jsObj, r'checked', object.checked);
-  IsarNative.jsObjectSet(jsObj, r'id', object.id);
-  IsarNative.jsObjectSet(jsObj, r'title', object.title);
-  return jsObj;
+  /*final jsObj = IsarNative.newJsObject();*/ throw UnimplementedError();
 }
 
 Todo _todoDeserializeWeb(IsarCollection<Todo> collection, Object jsObj) {
-  final object = Todo(
-    IsarNative.jsObjectGet(jsObj, r'title') ?? '',
-    IsarNative.jsObjectGet(jsObj, r'checked') ?? false,
-  );
-  object.id = IsarNative.jsObjectGet(jsObj, r'id');
-  return object;
+  /*final object = Todo(IsarNative.jsObjectGet(jsObj, r'title') ?? '',IsarNative.jsObjectGet(jsObj, r'checked') ?? false,);object.id = IsarNative.jsObjectGet(jsObj, r'id') ;*/
+  //return object;
+  throw UnimplementedError();
 }
 
 P _todoDeserializePropWeb<P>(Object jsObj, String propertyName) {
   switch (propertyName) {
-    case r'checked':
-      return (IsarNative.jsObjectGet(jsObj, r'checked') ?? false) as P;
-    case r'id':
-      return (IsarNative.jsObjectGet(jsObj, r'id')) as P;
-    case r'title':
-      return (IsarNative.jsObjectGet(jsObj, r'title') ?? '') as P;
     default:
       throw IsarError('Illegal propertyName');
   }
 }
 
-void _todoAttachLinks(IsarCollection<dynamic> col, int id, Todo object) {}
+int? _todoGetId(Todo object) {
+  if (object.id == Isar.autoIncrement) {
+    return null;
+  } else {
+    return object.id;
+  }
+}
+
+List<IsarLinkBase<dynamic>> _todoGetLinks(Todo object) {
+  return [];
+}
+
+void _todoAttach(IsarCollection<dynamic> col, Id id, Todo object) {
+  object.id = id;
+}
 
 extension TodoQueryWhereSort on QueryBuilder<Todo, Todo, QWhere> {
   QueryBuilder<Todo, Todo, QAfterWhere> anyId() {
@@ -327,7 +344,17 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Todo, Todo, QAfterFilterCondition> idEqualTo(int value) {
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> idIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query
+          .copyWith(filterNot: !query.filterNot)
+          .addFilterCondition(const FilterCondition.isNull(
+            property: r'id',
+          ));
+    });
+  }
+
+  QueryBuilder<Todo, Todo, QAfterFilterCondition> idEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -337,7 +364,7 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
   }
 
   QueryBuilder<Todo, Todo, QAfterFilterCondition> idGreaterThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -350,7 +377,7 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
   }
 
   QueryBuilder<Todo, Todo, QAfterFilterCondition> idLessThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -363,8 +390,8 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
   }
 
   QueryBuilder<Todo, Todo, QAfterFilterCondition> idBetween(
-    int lower,
-    int upper, {
+    int? lower,
+    int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -394,8 +421,8 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
 
   QueryBuilder<Todo, Todo, QAfterFilterCondition> titleGreaterThan(
     String value, {
-    bool caseSensitive = true,
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -409,8 +436,8 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
 
   QueryBuilder<Todo, Todo, QAfterFilterCondition> titleLessThan(
     String value, {
-    bool caseSensitive = true,
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
@@ -425,9 +452,9 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
   QueryBuilder<Todo, Todo, QAfterFilterCondition> titleBetween(
     String lower,
     String upper, {
-    bool caseSensitive = true,
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -490,9 +517,11 @@ extension TodoQueryFilter on QueryBuilder<Todo, Todo, QFilterCondition> {
   }
 }
 
+extension TodoQueryObject on QueryBuilder<Todo, Todo, QFilterCondition> {}
+
 extension TodoQueryLinks on QueryBuilder<Todo, Todo, QFilterCondition> {}
 
-extension TodoQueryWhereSortBy on QueryBuilder<Todo, Todo, QSortBy> {
+extension TodoQuerySortBy on QueryBuilder<Todo, Todo, QSortBy> {
   QueryBuilder<Todo, Todo, QAfterSortBy> sortByChecked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'checked', Sort.asc);
@@ -518,7 +547,7 @@ extension TodoQueryWhereSortBy on QueryBuilder<Todo, Todo, QSortBy> {
   }
 }
 
-extension TodoQueryWhereSortThenBy on QueryBuilder<Todo, Todo, QSortThenBy> {
+extension TodoQuerySortThenBy on QueryBuilder<Todo, Todo, QSortThenBy> {
   QueryBuilder<Todo, Todo, QAfterSortBy> thenByChecked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'checked', Sort.asc);

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:go_router/go_router.dart';
 import 'package:noted/constants.dart';
-import 'package:noted/data/note.dart';
 import 'package:noted/data/todo.dart';
 import 'package:noted/routes/note_page.dart';
 import 'package:noted/routes/settings_page.dart';
@@ -15,8 +15,18 @@ class MainPage extends StatefulWidget {
   /// The name of this route that gets used in navigation
   static const routeName = '/';
 
+  /// The tab that this page will launch on
+  final int tab;
+
+  /// The search input that this page will launch with
+  final String query;
+
   /// Creates a new Main route for the Noted! app.
-  const MainPage({super.key});
+  const MainPage({
+    super.key,
+    this.tab = 0,
+    this.query = '',
+  });
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -50,7 +60,9 @@ class _MainPageState extends State<MainPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // Setup the TabController and it's listener.
+    _tabController =
+        TabController(initialIndex: widget.tab, length: 2, vsync: this);
     _currentTabIndex = _tabController.index;
     _tabController.animation!.addListener(
       () {
@@ -70,6 +82,17 @@ class _MainPageState extends State<MainPage>
         }
       },
     );
+
+    // Fill in the search fields with the query data.
+    switch (_currentTabIndex) {
+      case 0:
+        _notesSearchController.text = widget.query;
+        context.read<Database>().filterNotes(widget.query);
+        break;
+      case 1:
+        _todosSearchController.text = widget.query;
+        context.read<Database>().filterTodos(widget.query);
+    }
   }
 
   /// Precaches the icon of the app that will be used on the about dialog so that
@@ -145,7 +168,7 @@ class _MainPageState extends State<MainPage>
               leading: const Icon(Icons.settings),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, SettingsPage.routeName);
+                context.goNamed(SettingsPage.routeName);
               },
               style: ListTileStyle.drawer,
             ),
@@ -179,17 +202,12 @@ class _MainPageState extends State<MainPage>
                 _newEntryBeingMade = true;
               });
               if (_currentTabIndex == 0) {
-                var note =
-                    await Navigator.pushNamed(context, NotePage.routeName)
-                        as Note?;
+                context.goNamed(NotePage.routeName);
                 setState(() {
                   _notesSearchController.clear();
                   context.read<Database>().filterNotes('');
                   _newEntryBeingMade = false;
                 });
-                if (!mounted) return;
-                if (note == null) return;
-                context.read<Database>().addNote(note);
               } else if (_currentTabIndex == 1) {
                 final todo = await showModalBottomSheet(
                     isScrollControlled: true,
@@ -301,12 +319,8 @@ class _MainPageState extends State<MainPage>
                             maxLines: 1,
                           ),
                           onTap: () async {
-                            final note = await Navigator.pushNamed(
-                                context, NotePage.routeName,
-                                arguments: value.notes[index]) as Note?;
-                            if (!mounted) return;
-                            if (note == null) return;
-                            context.read<Database>().modifyNote(note);
+                            context.goNamed(NotePage.routeName,
+                                extra: value.notes[index]);
                           },
                         ),
                       );
