@@ -4,9 +4,9 @@ A simple notes and todo app, written with Flutter. This app is written mostly wi
 
 TODO:
 - ~~Change the settings page's Dropdowns to Material Alert Dialogs~~
-- Add state restoration
+- ~~Add state restoration~~
+- ~~Use Navigation 2/Go Route (?)~~ (Postponed because currently Go_Router doesn't support state restoration of the sub-routes)
 - Add sharing functionality
-- Use Navigation 2/Go Route (?)
 - Complete the widget tests
 - Add Undo/Redo
 

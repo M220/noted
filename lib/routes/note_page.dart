@@ -4,37 +4,65 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:noted/data/note.dart';
 
+const idKey = 'id';
+const titleKey = 'title';
+const detailsKey = 'detials';
+
 /// The route widget of the Note page. Awaiting this route may result in a new or modified instance
-/// of [Note]. The [note] parameter can be set if an existing note is being modified.
+/// of [Note]. The [noteValues] parameter can be set if an existing note is being modified.
 class NotePage extends StatefulWidget {
   /// The name of this route that gets used in navigation
-  static const routeName = '/NotePage';
+  static const routeName = 'note';
 
-  /// The [Note] instance that is getting modified. Set to null for new Todos.
-  final Note? note;
+  /// The values of the note that is being modified. It is a map because state restoration
+  /// doesn't work for values that are not primitive, for example, an instance of Note.
+  /// This map should be of type <String, dynamic> just like a Json file. it is not
+  /// typed here because it causes issues in the Dart VM's when attempting state restoration.
+  /// It should have the keys: 'id', 'title' and 'details' each assigned to the related
+  /// [Note]'s instance variables.
+  ///
+  /// Set to null for a new note.
+  final Map? noteValues;
 
-  const NotePage({super.key, this.note});
+  /// Creates a new Note route. Set the [noteValues] to modify a note or leave it
+  /// as null to add a new one.
+  const NotePage({super.key, this.noteValues});
 
   @override
   State<NotePage> createState() => _NotePageState();
 }
 
-class _NotePageState extends State<NotePage> {
+class _NotePageState extends State<NotePage> with RestorationMixin {
   /// The textController for the title's TextField
-  late TextEditingController _titleController;
+  late RestorableTextEditingController _titleController;
 
   /// The textController for the details' TextField
-  late TextEditingController _detailsController;
+  late RestorableTextEditingController _detailsController;
 
   /// Initializes the needed instance variables
   ///
-  /// if [note] is given to the widget, the default values
+  /// if [noteValues] is given to the widget, the default values
   /// of the TextControllers will be assigned to the given values.
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.note?.title);
-    _detailsController = TextEditingController(text: widget.note?.title);
+    _titleController =
+        RestorableTextEditingController(text: widget.noteValues?[titleKey]);
+    _detailsController =
+        RestorableTextEditingController(text: widget.noteValues?[detailsKey]);
+  }
+
+  /// The restorationId that will be used to find and restore this route's variables.
+  @override
+  String? get restorationId => 'Note Route';
+
+  /// restores the state of the app when it gets launched again after getting killed.
+  ///
+  /// All of the Restorables should be registered here.
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_titleController, 'Title input controller');
+    registerForRestoration(_detailsController, 'Details input controller');
   }
 
   @override
@@ -45,16 +73,16 @@ class _NotePageState extends State<NotePage> {
     // the result can be processed and returned. It also supports the Android's back button.
     return WillPopScope(
       onWillPop: () async {
-        var title = _titleController.text;
-        var details = _detailsController.text;
-        final note = widget.note;
+        var title = _titleController.value.text;
+        var details = _detailsController.value.text;
+        final noteValues = widget.noteValues;
 
         if (title.trim().isEmpty && details.trim().isEmpty) {
           Navigator.pop(context, null);
           return true;
         }
 
-        if (note == null) {
+        if (noteValues == null) {
           if (title.trim().isEmpty) {
             final firstDetailsLine = LineSplitter.split(details).first;
             if (firstDetailsLine.length <= 36) {
@@ -63,11 +91,15 @@ class _NotePageState extends State<NotePage> {
               title = firstDetailsLine.substring(0, 36);
             }
           }
-          Navigator.pop(context, Note(title, details));
+          final newNoteValues = <String, dynamic>{
+            titleKey: title,
+            detailsKey: details,
+          };
+          Navigator.pop(context, newNoteValues);
         } else {
-          note.title = title;
-          note.details = details;
-          Navigator.pop(context, note);
+          noteValues[titleKey] = title;
+          noteValues[detailsKey] = details;
+          Navigator.pop(context, noteValues);
         }
         return true;
       },
@@ -78,7 +110,7 @@ class _NotePageState extends State<NotePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
-                controller: _titleController,
+                controller: _titleController.value,
                 decoration: InputDecoration(
                   labelText: localizations.titleTextFieldLabel,
                   hintText: localizations.titleTextFieldHint,
@@ -90,7 +122,7 @@ class _NotePageState extends State<NotePage> {
               padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 child: TextField(
-                  controller: _detailsController,
+                  controller: _detailsController.value,
                   decoration: InputDecoration(
                     labelText: localizations.detailsTextFieldLabel,
                     hintText: localizations.detailsTextFieldHint,
@@ -107,7 +139,7 @@ class _NotePageState extends State<NotePage> {
     );
   }
 
-  /// Dispose of the TextControllers so that memory leak doesn't happen.
+  /// Dispose of the RestorableTextControllers so that memory leak doesn't happen.
   @override
   void dispose() {
     _titleController.dispose();

@@ -23,18 +23,22 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RestorationMixin {
   /// The TabController that manages the tabs and it's animations
   late TabController _tabController;
 
-  /// The current tab that is being shown. Will be used for FAB's functionality
-  late int _currentTabIndex;
+  /// The note route that will be pushed when pressing the FAB in the note's tab
+  /// and can be restored. We need this because we need the result data from the route
+  late RestorableRouteFuture _restorableNotesRoute;
 
   /// The TextController for the notes' search TextField
-  final _notesSearchController = TextEditingController();
+  final _notesSearchController = RestorableTextEditingController();
 
   /// The TextController for the Todos' search TextField
-  final _todosSearchController = TextEditingController();
+  final _todosSearchController = RestorableTextEditingController();
+
+  /// The current tab that is being shown. Will be used for FAB's functionality
+  final _currentTabIndex = RestorableInt(0);
 
   /// Set to true when user taps the FAB and false when the user finishes doing so.
   /// Is used for animations
@@ -51,24 +55,29 @@ class _MainPageState extends State<MainPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _currentTabIndex = _tabController.index;
     _tabController.animation!.addListener(
       () {
         final value = _tabController.animation!.value.round();
-        if (value != _currentTabIndex) {
-          setState(
-              () => _currentTabIndex = _tabController.animation!.value.round());
-          switch (_currentTabIndex) {
+        if (value != _currentTabIndex.value) {
+          setState(() =>
+              _currentTabIndex.value = _tabController.animation!.value.round());
+          switch (_currentTabIndex.value) {
             case 0:
               context.read<Database>().filterTodos(null);
-              _todosSearchController.clear();
+              _todosSearchController.value.clear();
               break;
             default:
               context.read<Database>().filterNotes(null);
-              _notesSearchController.clear();
+              _notesSearchController.value.clear();
           }
         }
       },
+    );
+    _restorableNotesRoute = RestorableRouteFuture(
+      onPresent: (navigator, arguments) => Navigator.restorablePushNamed(
+          context, NotePage.routeName,
+          arguments: arguments),
+      onComplete: (result) => _processNoteRouteResult(result),
     );
   }
 
@@ -78,6 +87,33 @@ class _MainPageState extends State<MainPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     precacheImage(const AssetImage(iconAssetPath), context);
+  }
+
+  /// The restorationId that will be used to find and restore this route's variables.
+  @override
+  String? get restorationId => 'Noted Main Route';
+
+  /// restores the state of the app when it gets launched again after getting killed.
+  ///
+  /// All of the Restorables should be registered here.
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) async {
+    registerForRestoration(_currentTabIndex, 'current tab index');
+    _tabController.index = _currentTabIndex.value;
+    registerForRestoration(_restorableNotesRoute, 'Notes\'s route');
+    registerForRestoration(
+        _notesSearchController, 'Note tab\'s search controller');
+    registerForRestoration(
+        _todosSearchController, 'Todo tab\'s search controller');
+
+    // The lists should get filtered after restoration of the search fields are done.
+    switch (_currentTabIndex.value) {
+      case 0:
+        context.read<Database>().filterNotes(_notesSearchController.value.text);
+        break;
+      default:
+        context.read<Database>().filterTodos(_todosSearchController.value.text);
+    }
   }
 
   @override
@@ -145,7 +181,7 @@ class _MainPageState extends State<MainPage>
               leading: const Icon(Icons.settings),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, SettingsPage.routeName);
+                Navigator.restorablePushNamed(context, SettingsPage.routeName);
               },
               style: ListTileStyle.drawer,
             ),
@@ -178,26 +214,16 @@ class _MainPageState extends State<MainPage>
               setState(() {
                 _newEntryBeingMade = true;
               });
-              if (_currentTabIndex == 0) {
-                var note =
-                    await Navigator.pushNamed(context, NotePage.routeName)
-                        as Note?;
-                setState(() {
-                  _notesSearchController.clear();
-                  context.read<Database>().filterNotes('');
-                  _newEntryBeingMade = false;
-                });
-                if (!mounted) return;
-                if (note == null) return;
-                context.read<Database>().addNote(note);
-              } else if (_currentTabIndex == 1) {
+              if (_currentTabIndex.value == 0) {
+                _restorableNotesRoute.present();
+              } else if (_currentTabIndex.value == 1) {
                 final todo = await showModalBottomSheet(
                     isScrollControlled: true,
                     context: context,
                     builder: (context) => const TodoSheet()) as Todo?;
                 if (!mounted) return;
                 setState(() {
-                  _todosSearchController.clear();
+                  _todosSearchController.value.clear();
                   context.read<Database>().filterTodos('');
                   _newEntryBeingMade = false;
                 });
@@ -213,24 +239,45 @@ class _MainPageState extends State<MainPage>
     );
   }
 
+  /// Gets called when a note route is completed and may add a note to the notes list.
+  /// [noteValues] should be a <String, dynamic> Map containing the keys 'title'
+  /// and 'details'. A key 'id' should also be present if the said note was modified.
+  void _processNoteRouteResult(Map? noteValues) {
+    setState(() {
+      _notesSearchController.value.clear();
+      context.read<Database>().filterNotes('');
+      _newEntryBeingMade = false;
+    });
+    if (noteValues == null) return;
+
+    // Add if note is modified which is the case if the map has an id key.
+    if (!noteValues.containsKey(idKey)) {
+      final note = Note(noteValues[titleKey], noteValues[detailsKey]);
+      context.read<Database>().addNote(note);
+    } else {
+      final note = Note(noteValues[titleKey], noteValues[detailsKey])
+        ..id = noteValues[idKey];
+      context.read<Database>().modifyNote(note);
+    }
+  }
+
   /// The notes tab widget
   Consumer<Database> _buildNotesTabView() {
     final localizations = AppLocalizations.of(context);
-
     return Consumer<Database>(builder: (context, value, child) {
       return Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              controller: _notesSearchController,
+              controller: _notesSearchController.value,
               decoration: InputDecoration(
                 isDense: true,
                 prefixIcon: const Icon(Icons.search),
                 labelText: localizations.searchFieldLabel,
               ),
               onTap: () {
-                value.filterNotes(_notesSearchController.text);
+                value.filterNotes(_notesSearchController.value.text);
               },
               onChanged: (searchValue) {
                 value.filterNotes(searchValue);
@@ -271,6 +318,7 @@ class _MainPageState extends State<MainPage>
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ListView.builder(
+                    restorationId: 'Notes List',
                     itemCount: value.notes.length,
                     itemBuilder: (context, index) {
                       return Slidable(
@@ -301,12 +349,11 @@ class _MainPageState extends State<MainPage>
                             maxLines: 1,
                           ),
                           onTap: () async {
-                            final note = await Navigator.pushNamed(
-                                context, NotePage.routeName,
-                                arguments: value.notes[index]) as Note?;
-                            if (!mounted) return;
-                            if (note == null) return;
-                            context.read<Database>().modifyNote(note);
+                            _restorableNotesRoute.present(<String, dynamic>{
+                              idKey: value.notes[index].id,
+                              titleKey: value.notes[index].title,
+                              detailsKey: value.notes[index].details,
+                            });
                           },
                         ),
                       );
@@ -324,14 +371,13 @@ class _MainPageState extends State<MainPage>
   /// The todos tab widget
   Consumer<Database> _buildTodoTabView() {
     final localizations = AppLocalizations.of(context);
-
     return Consumer<Database>(builder: (context, value, child) {
       return Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              controller: _todosSearchController,
+              controller: _todosSearchController.value,
               decoration: InputDecoration(
                 isDense: true,
                 prefixIcon: const Icon(Icons.search),
@@ -375,6 +421,7 @@ class _MainPageState extends State<MainPage>
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ListView.builder(
+                    restorationId: 'Todos List',
                     itemCount: value.todos.length,
                     itemBuilder: (context, index) {
                       final checked = value.todos[index].checked;
@@ -447,12 +494,14 @@ class _MainPageState extends State<MainPage>
     });
   }
 
-  /// Dispose of the TextControllers and the TabController to avoid memory leak.
+  /// Dispose of the Controllers and Restorables to avoid memory leak.
   @override
   void dispose() {
     _notesSearchController.dispose();
     _todosSearchController.dispose();
+    _restorableNotesRoute.dispose();
     _tabController.dispose();
+    _currentTabIndex.dispose();
     super.dispose();
   }
 }
