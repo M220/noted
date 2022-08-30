@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 /// The route widget of the Settings page
 class SettingsPage extends StatefulWidget {
   /// The name of this route that gets used in navigation
-  static const routeName = '/settings';
+  static const routeName = 'settings';
 
   const SettingsPage({super.key});
 

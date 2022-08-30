@@ -12,7 +12,7 @@ const detailsKey = 'detials';
 /// of [Note]. The [noteValues] parameter can be set if an existing note is being modified.
 class NotePage extends StatefulWidget {
   /// The name of this route that gets used in navigation
-  static const routeName = '/NotePage';
+  static const routeName = 'note';
 
   /// The values of the note that is being modified. It is a map because state restoration
   /// doesn't work for values that are not primitive, for example, an instance of Note.
